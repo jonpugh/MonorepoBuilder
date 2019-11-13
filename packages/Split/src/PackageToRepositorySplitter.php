@@ -79,7 +79,7 @@ final class PackageToRepositorySplitter
             );
 
             $this->symfonyStyle->note('Running: ' . $process->getCommandLine());
-            $process->start(null, $_SERVER);
+            $process->start();
 
             $this->activeProcesses[] = $process;
             $this->processInfos[] = new SplitProcessInfo($process, $localDirectory, $remoteRepository);
