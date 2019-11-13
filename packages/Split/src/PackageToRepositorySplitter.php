@@ -8,7 +8,7 @@ use Symplify\MonorepoBuilder\Split\Exception\PackageToRepositorySplitException;
 use Symplify\MonorepoBuilder\Split\Git\GitManager;
 use Symplify\MonorepoBuilder\Split\Process\ProcessFactory;
 use Symplify\MonorepoBuilder\Split\Process\SplitProcessInfo;
-use Symplify\PackageBuilder\FileSystem\FileSystemGuard;
+use Symplify\SmartFileSystem\FileSystemGuard;
 
 final class PackageToRepositorySplitter
 {
@@ -63,6 +63,7 @@ final class PackageToRepositorySplitter
         ?int $maxProcesses = null
     ): void {
         $theMostRecentTag = $this->gitManager->getMostRecentTag($rootDirectory);
+        $currentBranch = $this->gitManager->getCurrentBranch($rootDirectory);
         foreach ($splitConfig as $localDirectory => $remoteRepository) {
             $this->fileSystemGuard->ensureDirectoryExists($localDirectory);
 
@@ -73,7 +74,8 @@ final class PackageToRepositorySplitter
             $process = $this->processFactory->createSubsplit(
                 $theMostRecentTag,
                 $localDirectory,
-                $remoteRepositoryWithGithubKey
+                $remoteRepositoryWithGithubKey,
+                $currentBranch
             );
 
             $this->symfonyStyle->note('Running: ' . $process->getCommandLine());

@@ -48,18 +48,24 @@ final class GitManager
     }
 
     /**
-     * @param string $commandResult
-     * @return array|string[]
+     * Returns null if not on a branch.
      */
-    private function parseTags(string $commandResult): array
+    public function getCurrentBranch(string $gitDirectory): ?string
     {
-        $tags = trim($commandResult);
+        $command = ['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'];
 
-        // Remove all "\r" chars in case the CLI env like the Windows OS.
-        // Otherwise (ConEmu, git bash, mingw cli, e.g.), leave as is.
-        $tags = \str_replace("\r", '', $tags);
+        if (getcwd() !== $gitDirectory) {
+            $command[] = '--git-dir';
+            $command[] = $gitDirectory;
+        }
 
-        return explode("\n", $tags);
+        $branch = trim($this->processRunner->run($command));
+
+        if (empty($branch)) {
+            return null;
+        }
+
+        return $branch;
     }
 
     /**
@@ -85,5 +91,19 @@ final class GitManager
         $partAfterAt = Strings::replace($partAfterAt, '#:#', '/');
 
         return sprintf('https://%s@%s', $this->githubToken, $partAfterAt);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function parseTags(string $commandResult): array
+    {
+        $tags = trim($commandResult);
+
+        // Remove all "\r" chars in case the CLI env like the Windows OS.
+        // Otherwise (ConEmu, git bash, mingw cli, e.g.), leave as is.
+        $tags = str_replace("\r", '', $tags);
+
+        return explode("\n", $tags);
     }
 }
